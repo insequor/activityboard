@@ -33,12 +33,11 @@
                 cursor: pointer;
             }
 
-            .ActivitySummary {
+            .Footer{
+                margin-top:20px;
                 text-align: center;
-                width:100%;
+                color:gray;
             }
-
-            .Footer{}
 
 
         </style>
@@ -55,35 +54,15 @@
                         <span ng-show="canResume(activity)" ng-click="resumeActivity(activity)">Resume</span>
                         <span ng-show="canStop(activity)" ng-click="stopActivity(activity)">Stop</span>
                     </div>
-                    <div>
-                        {{totalDuration(activity)}} seconds today
+                    <div ng-show="activity == currentActivity">
+                        <div>{{duration(currentActivity)}}  seconds</div>
+                    </div>
+                    <div ng-show="activity.numSessions">
+                        {{totalDuration(activity)}} seconds today in {{currentActivity.numSessions}} sessions
                     </div>
                 </td>
             </tr>
         </table>
-        <table class="ActivitySummary">
-            <tr>
-                <td>
-                    <h3>Current Activity</h3>
-                    <div ng-show="currentActivity">
-                        <div>{{currentActivity.label}}
-                            <span ng-show="canResume(currentActivity)">(Paused)</span>
-                        </div>
-                        <div>Current Session: {{duration(currentActivity)}}  seconds</div>
-                        <div>Total today: {{totalDuration(currentActivity)}} seconds</div>
-                        <div>Today had: {{currentActivity.numSessions}} sessions</div>
-                    </div>
-                    <div ng-show="!currentActivity">Nothing active</div>
-                </td>
-                <td>
-                    <h3>Daily Summary</h3>
-                    <div>
-
-                    </div>
-                </td>
-            </tr>
-        </table>
-
         <div class="Footer">
             See <a href="https://github.com/insequor/activityboard/wiki/What-do-I-use">here</a> for the list of things used from outside this project
         </div>
@@ -158,7 +137,7 @@
                         activity('Movie', "movie.png", 90.0 * 60.0),
                         activity('Writing', "pencil.png"),
                         activity('Space Mission', "rocket.png"),
-                        activity('E-play', "wii.png", 30.0 * 60.0)
+                        activity('E-play', "wii.png", 10.0 * 1.0)
                     ]
                 ];
             $scope.currentActivity = undefined;
