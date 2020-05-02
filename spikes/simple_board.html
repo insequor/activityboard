@@ -1,8 +1,164 @@
-<html>
+<html ng-app="App">
     <head>
         <title>Simple Activity Board</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+        <style> 
+            body {
+                padding: 5;
+                text-align: center;
+            }
+
+            .ActivityBoard {
+                text-align: center;
+                width:100%;
+
+            }
+            .Activity {
+            }
+            .ActivityIcon {
+                width:192px;
+                height:192px;
+            }
+            .ActivityLabel {
+                text-align: center;
+                font-size:larger;
+            }
+            .ActivityControls {
+            }
+
+            .ActivityControls Span:hover{
+                cursor: pointer;
+            }
+
+            .ActivitySummary {
+                text-align: center;
+                width:100%;
+            }
+
+
+        </style>
     </head>
-    <body>
-        
+    <body ng-controller="Controller">
+        <table class="ActivityBoard">
+            <tr ng-repeat="activityRow in activities">
+                <td class="Activity" ng-repeat="activity in activityRow">
+                    <img class="ActivityIcon" ng-src="../data/icons/{{activity.icon}}"/>
+                    <div class="ActivityLabel">{{activity.label}}</div>
+                    <div class="ActivityControls">
+                        <span ng-show="canStart(activity)" ng-click="startActivity(activity)">Start</span>
+                        <span ng-show="canPause(activity)" ng-click="pauseActivity(activity)">Pause</span>
+                        <span ng-show="canResume(activity)" ng-click="resumeActivity(activity)">Resume</span>
+                        <span ng-show="canStop(activity)" ng-click="stopActivity(activity)">Stop</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <table class="ActivitySummary">
+            <tr>
+                <td>
+                    <h3>Current Activity</h3>
+                    <div ng-show="currentActivity">
+                        <div>{{currentActivity.label}}
+                            <span ng-show="canResume(currentActivity)">(Paused)</span>
+                        </div>
+                        <div>Current Session: TODO minutes</div>
+                        <div>Total today: TODO minutes</div>
+                        <div>Today had: TODO sessions</div>
+                    </div>
+                    <div ng-show="!currentActivity">Nothing active</div>
+                </td>
+                <td>
+                    <h3>Daily Summary</h3>
+                    <div>
+
+                    </div>
+                </td>
+            </tr>
+        </table>
     </body>
+    <script>
+        var app = angular.module('App', [
+            'App.controllers'
+        ]);
+        var module = angular.module('App.controllers', []);
+        module.controller('Controller', function ($scope, $log, $timeout) {
+            $scope.activities = [
+                    [
+                        {label: 'Painting', icon:"art-deco.png"},
+                        {label: 'Reading', icon:"book.png"},
+                        {label: 'Chess', icon:"chess.png"},
+                        {label: 'Cleaning', icon:"cleaning.png"}
+                    ],
+                    [
+                        {label: 'Cooking', icon:"cooking.png"},
+                        {label: 'Exercise', icon:"exercise.png"},
+                        {label: 'Gardening', icon:"gardening.png"},
+                        {label: 'Study', icon:"graphic-design.png"}
+                    ],
+                    [
+                        {label: 'Movie', icon:"movie.png"},
+                        {label: 'Writing', icon:"pencil.png"},
+                        {label: 'Space Mission', icon:"rocket.png"},
+                        {label: 'E-play', icon:"wii.png"}
+                    ]
+                ];
+            $scope.currentActivity = undefined;
+
+            function assert(condition, message) {
+                if (!condition) {
+                    throw message || "Assertion failed";
+                }
+            }
+
+            $scope.canStart = function(activity){
+                return activity && $scope.currentActivity != activity;
+            }
+
+            $scope.canPause = function(activity){
+                if($scope.currentActivity != activity)
+                    return false;
+                return activity && activity.active;
+            }
+
+            $scope.canResume = function(activity){
+                if($scope.currentActivity != activity)
+                    return false;
+                return activity && !activity.active;
+            }
+
+            $scope.canStop = function(activity){
+                return activity && $scope.currentActivity == activity;
+            }
+
+            $scope.startActivity = function(activity){
+                assert(activity != $scope.currentActivity);
+                if($scope.currentActivity)
+                    $scope.stopActivity($scope.currentActivity);
+                $scope.currentActivity = activity;
+                activity.active = true;
+            }
+
+            $scope.pauseActivity = function(activity){
+                assert(activity == $scope.currentActivity);
+                activity.active = false;
+            }
+
+            $scope.resumeActivity = function(activity){
+                assert(activity == $scope.currentActivity);
+                activity.active = true;
+            }
+
+            $scope.stopActivity = function(activity){
+                assert(activity == $scope.currentActivity);
+                activity.active = false;
+                $scope.currentActivity = undefined;
+            }
+
+
+        });
+
+
+
+
+    </script>
 </html>
