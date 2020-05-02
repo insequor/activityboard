@@ -16,8 +16,8 @@
             .Activity {
             }
             .ActivityIcon {
-                width:192px;
-                height:192px;
+                width:160px;
+                height:160px;
             }
             .ActivityLabel {
                 text-align: center;
@@ -50,6 +50,9 @@
                         <span ng-show="canResume(activity)" ng-click="resumeActivity(activity)">Resume</span>
                         <span ng-show="canStop(activity)" ng-click="stopActivity(activity)">Stop</span>
                     </div>
+                    <div>
+                        {{totalDuration(activity)}} seconds today
+                    </div>
                 </td>
             </tr>
         </table>
@@ -61,9 +64,9 @@
                         <div>{{currentActivity.label}}
                             <span ng-show="canResume(currentActivity)">(Paused)</span>
                         </div>
-                        <div>Current Session: TODO minutes</div>
-                        <div>Total today: TODO minutes</div>
-                        <div>Today had: TODO sessions</div>
+                        <div>Current Session: {{duration(currentActivity)}}  seconds</div>
+                        <div>Total today: {{totalDuration(currentActivity)}} seconds</div>
+                        <div>Today had: {{currentActivity.numSessions}} sessions</div>
                     </div>
                     <div ng-show="!currentActivity">Nothing active</div>
                 </td>
@@ -82,33 +85,46 @@
         ]);
         var module = angular.module('App.controllers', []);
         module.controller('Controller', function ($scope, $log, $timeout) {
-            $scope.activities = [
-                    [
-                        {label: 'Painting', icon:"art-deco.png"},
-                        {label: 'Reading', icon:"book.png"},
-                        {label: 'Chess', icon:"chess.png"},
-                        {label: 'Cleaning', icon:"cleaning.png"}
-                    ],
-                    [
-                        {label: 'Cooking', icon:"cooking.png"},
-                        {label: 'Exercise', icon:"exercise.png"},
-                        {label: 'Gardening', icon:"gardening.png"},
-                        {label: 'Study', icon:"graphic-design.png"}
-                    ],
-                    [
-                        {label: 'Movie', icon:"movie.png"},
-                        {label: 'Writing', icon:"pencil.png"},
-                        {label: 'Space Mission', icon:"rocket.png"},
-                        {label: 'E-play', icon:"wii.png"}
-                    ]
-                ];
-            $scope.currentActivity = undefined;
-
             function assert(condition, message) {
                 if (!condition) {
                     throw message || "Assertion failed";
                 }
             }
+
+            function activity(label, icon){
+                return {
+                        label: label, 
+                        icon: icon, 
+                        active: false,
+                        activeDuration: 0,
+                        duration: 0,
+                        totalDuration: 0,
+                        numSessions: 0,
+                        lastStarted: undefined
+                    };
+            }
+            
+            $scope.activities = [
+                    [
+                        activity('Painting', "art-deco.png"),
+                        activity('Reading', "book.png"),
+                        activity('Chess', "chess.png"),
+                        activity('Cleaning', "cleaning.png")
+                    ],
+                    [
+                        activity('Cooking', "cooking.png"),
+                        activity('Exercise', "exercise.png"),
+                        activity('Gardening', "gardening.png"),
+                        activity('Study', "graphic-design.png")
+                    ],
+                    [
+                        activity('Movie', "movie.png"),
+                        activity('Writing', "pencil.png"),
+                        activity('Space Mission', "rocket.png"),
+                        activity('E-play', "wii.png")
+                    ]
+                ];
+            $scope.currentActivity = undefined;
 
             $scope.canStart = function(activity){
                 return activity && $scope.currentActivity != activity;
@@ -136,25 +152,55 @@
                     $scope.stopActivity($scope.currentActivity);
                 $scope.currentActivity = activity;
                 activity.active = true;
+                activity.numSessions ++;
+                activity.lastStarted = new Date();
+                update();
             }
 
             $scope.pauseActivity = function(activity){
                 assert(activity == $scope.currentActivity);
                 activity.active = false;
+                activity.duration += activity.activeDuration;
+                activity.lastStarted = undefined;
+                activity.activeDuration = 0;
             }
 
             $scope.resumeActivity = function(activity){
                 assert(activity == $scope.currentActivity);
                 activity.active = true;
+                activity.lastStarted = new Date();
+                update();
             }
 
             $scope.stopActivity = function(activity){
                 assert(activity == $scope.currentActivity);
-                activity.active = false;
+                $scope.pauseActivity(activity);
+                activity.totalDuration += activity.duration;
+                activity.duration = 0;
                 $scope.currentActivity = undefined;
             }
 
+            $scope.totalDuration = function(activity){
+                if(!activity)
+                    return 0;
+                return activity.totalDuration + activity.duration + activity.activeDuration;
+            }
 
+            $scope.duration = function(activity){
+                if(!activity)
+                    return 0;
+                return activity.duration + activity.activeDuration;
+            }
+
+            function update() {
+                if($scope.currentActivity && $scope.currentActivity.active) {
+                    time = new Date();
+                    $scope.currentActivity.activeDuration = Math.round((time - $scope.currentActivity.lastStarted) / 1000.0);
+                    $timeout(function () {
+                        update();
+                    }, 1000);
+                }
+            }
         });
 
 
