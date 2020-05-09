@@ -1,0 +1,284 @@
+<html ng-app="App">
+    <head>
+        <title>Simple Activity Board</title>
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.3/howler.min.js"></script>
+        <link rel="shortcut icon" type="image/png" href="../data/icons/education.png"/>
+
+        <style> 
+            html, body {
+                text-align: center;
+                height: 95%;
+            }
+
+            .ActivityBoard {
+                text-align: center;
+                width:100%;
+                height: 100%;
+
+            }
+            .ActivityCell {
+                width:20%;
+                max-width: 20%;
+                height:160px;
+            }
+
+            .ActivityIcon {
+                width:140px;
+                height:140px;
+            }
+
+            .ActiveIcon {
+                width:400px;
+                height:400px;
+            }
+
+            .ControlIcon {
+                width:64px;
+                height:64px;
+            }
+
+            .Footer{
+                margin-top:20px;
+                text-align: center;
+                color:gray;
+            }
+
+
+        </style>
+    </head>
+    <body ng-controller="Controller">
+        <table class="ActivityBoard">
+            <tr>
+                <td class="ActivityCell" ng-repeat="activity in activities[0]">
+                    <div ng-click="selectActivity(activity)">
+                        <img class="ActivityIcon" ng-src="../data/icons/{{activity.icon}}"/>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                 <td class="ActivityCell">
+                    <div ng-click="selectActivity(activities[1][0])">
+                        <img class="ActivityIcon" ng-src="../data/icons/{{activities[1][0].icon}}"/>
+                    </div>
+                </td>
+                <td rowspan="3" colspan="3">
+                    <div ng-show="currentActivity">
+                        <table width="100%">
+                            <tr>
+                                <td width="50%">
+                                    <img class="ActiveIcon" ng-src="../data/icons/{{currentActivity.icon}}"/>        
+                                </td>
+                                <td width="50%" style="border:black solid 1">
+                                    <div>
+                                        <div>
+                                            <div>{{duration(currentActivity)}} seconds</div>
+                                        </div>
+                                        <div>
+                                            {{totalDuration(currentActivity)}} seconds today in {{currentActivity.numSessions}} sessions
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <img class="ControlIcon" ng-src="../data/icons/multimedia-option.png" 
+                                            ng-show="canStart(currentActivity)"
+                                            ng-click="startActivity(currentActivity)"/>
+                                        <img class="ControlIcon" ng-src="../data/icons/multimedia-option.png" 
+                                            ng-show="canResume(currentActivity)"
+                                            ng-click="resumeActivity(currentActivity)"/>
+                                        <img class="ControlIcon" ng-src="../data/icons/pause.png" 
+                                            ng-show="canPause(currentActivity)"
+                                            ng-click="pauseActivity(currentActivity)"/>
+                                        <img class="ControlIcon" ng-src="../data/icons/square.png" 
+                                            ng-show="canStop(currentActivity)"
+                                            ng-click="stopActivity(currentActivity)"/>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div ng-show="!currentActivity">Board Menu</div>    
+                </td>
+                <td class="ActivityCell">
+                    <div ng-click="selectActivity(activities[1][1])">
+                        <img class="ActivityIcon" ng-src="../data/icons/{{activities[1][1].icon}}"/>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="ActivityCell" ng-repeat="activity in activities[2]">
+                    <div ng-click="selectActivity(activity)">
+                        <img class="ActivityIcon" ng-src="../data/icons/{{activity.icon}}"/>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="ActivityCell" ng-repeat="activity in activities[3]">
+                    <div ng-click="selectActivity(activity)">
+                        <img class="ActivityIcon" ng-src="../data/icons/{{activity.icon}}"/>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="ActivityCell" ng-repeat="activity in activities[4]">
+                    <div ng-click="selectActivity(activity)">
+                        <img class="ActivityIcon" ng-src="../data/icons/{{activity.icon}}"/>
+                    </div>
+                </td>
+                <td class="ActivityCell" ng-click="selectActivity(undefined);">Board Menu</td>
+            </tr>
+        </table>
+        <div class="Footer">
+            See <a href="what_do_i_use.html">here</a> for the list of things used from outside this project
+        </div>
+        
+    </body>
+    <script>
+        var app = angular.module('App', [
+            'App.controllers'
+        ]);
+        var module = angular.module('App.controllers', []);
+        module.controller('Controller', function ($scope, $log, $timeout) {
+            function assert(condition, message) {
+                if (!condition) {
+                    throw message || "Assertion failed";
+                }
+            }
+
+            function activity(label, icon, limitInSeconds){
+                return {
+                        label: label, 
+                        icon: icon, 
+                        limitInSeconds: limitInSeconds,
+                        state: 'stopped',
+                        activeDuration: 0,
+                        duration: 0,
+                        totalDuration: 0,
+                        numSessions: 0,
+                        lastStarted: undefined,
+                        alarm: undefined
+                    };
+            }
+
+            $scope.activities = [
+                    [
+                        activity('Painting', "art-deco.png"),
+                        activity('Reading', "book.png"),
+                        activity('Chess', "chess.png"),
+                        activity('Cleaning', "cleaning.png"),
+                        activity('Cooking', "cooking.png")
+                    ],
+                    [
+                        activity('Exercise', "exercise.png"),
+                        activity('Study', "graphic-design.png")
+                    ],
+                    [
+                        activity('Movie', "movie.png", 90.0 * 60.0),
+                        activity('E-play', "wii.png", 30.0 * 60.0)
+                    ],
+                    [
+                        activity('Writing', "pencil.png"),
+                        activity('Space Mission', "rocket.png")
+                    ],
+                    [
+                        activity('Gardening', "gardening.png"),
+                        activity('Reading', "book.png"),
+                        activity('Chess', "chess.png"),
+                        activity('Cleaning', "cleaning.png")
+                    ]
+                ];
+
+            $scope.currentActivity = undefined;
+
+            $scope.selectActivity = function(activity){
+                $scope.currentActivity = activity;
+            }
+
+            $scope.canStart = function(activity){
+                return activity && activity.state == 'stopped';
+            }
+
+            $scope.canPause = function(activity){
+                return activity && activity.state == 'started';
+            }
+
+            $scope.canResume = function(activity){
+                return activity && activity.state == 'paused';
+            }
+
+            $scope.canStop = function(activity){
+                return activity && (activity.state == 'started' || activity.state == 'paused');
+            }
+
+            $scope.startActivity = function(activity){
+                assert(activity.state == 'stopped');
+                activity.state = 'started';
+                activity.numSessions ++;
+                activity.lastStarted = new Date();
+                update();
+            }
+
+            $scope.pauseActivity = function(activity){
+                assert(activity.state == 'started');
+                activity.state = 'paused';
+                activity.duration += activity.activeDuration;
+                activity.lastStarted = undefined;
+                activity.activeDuration = 0;
+            }
+
+            $scope.resumeActivity = function(activity){
+                assert(activity.state == 'paused');
+                activity.state = 'started';
+                activity.lastStarted = new Date();
+                update();
+            }
+
+            $scope.stopActivity = function(activity){
+                assert(activity.state == 'started' || activity.state == 'paused');
+                activity.state = 'stopped';
+                activity.duration += activity.activeDuration;
+                activity.lastStarted = undefined;
+                activity.activeDuration = 0;
+
+                activity.totalDuration += activity.duration;
+                activity.duration = 0;
+                if(activity.alarm) {
+                    activity.alarm.stop();
+                    activity.alarm = undefined;
+                }
+            }
+
+            function playAlarm(){
+
+            }
+
+            $scope.totalDuration = function(activity){
+                if(!activity)
+                    return 0;
+                return activity.totalDuration + activity.duration + activity.activeDuration;
+            }
+
+            $scope.duration = function(activity){
+                if(!activity)
+                    return 0;
+                return activity.duration + activity.activeDuration;
+            }
+
+            function update() {
+                if($scope.currentActivity && $scope.currentActivity.state == 'started') {
+                    time = new Date();
+                    $scope.currentActivity.activeDuration = Math.round((time - $scope.currentActivity.lastStarted) / 1000.0);
+                    playAlarm($scope.currentActivity);
+                    $timeout(function () {
+                        update();
+                    }, 1000);
+                }
+            }
+        });
+
+
+
+
+
+    </script>
+</html>
