@@ -72,8 +72,8 @@
                                 </td>
                                 <td width="50%" style="border:black solid 1">
                                     <div>
-                                        <div>
-                                            <div>{{duration(currentActivity)}} seconds</div>
+                                        <div ng-show="currentActivity.state == 'started' || currentActivity.state == 'paused' ">
+                                            {{duration(currentActivity)}} seconds in this session,
                                         </div>
                                         <div>
                                             {{totalDuration(currentActivity)}} seconds today in {{currentActivity.numSessions}} sessions
